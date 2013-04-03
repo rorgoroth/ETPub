@@ -76,7 +76,7 @@
     <ClCompile>
       <AdditionalOptions>/D "NO_BOT_SUPPORT" /D "LUA_SUPPORT" /D "_CRT_SECURE_NO_DEPRECATE" %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Omnibot\ET;..\..\Omnibot\Common;..\lua-5.1.4\include;..\sha-1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Omnibot\ET;..\..\Omnibot\Common;..\lua-5.2.1\include;..\sha-1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GAMEDLL;USE_MDXFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -96,7 +96,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;ws2_32.lib;lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\Debug/qagame_mp_x86.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\game.def</ModuleDefinitionFile>
@@ -111,7 +111,7 @@
       <ImportLibrary>.\Debug/qagame_mp_x86.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <ProgramDatabaseFile>..\Debug/qagame_mp_x86.pdb</ProgramDatabaseFile>
-      <AdditionalLibraryDirectories>..\lua-5.1.4\libs\win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lua-5.2.1\libs\win32</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -185,7 +185,7 @@
       <AdditionalOptions>/D "NO_BOT_SUPPORT" /D "LUA_SUPPORT" /D "_CRT_SECURE_NO_DEPRECATE" %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\Omnibot\ET;..\..\Omnibot\Common;..\lua-5.1.4\include;..\sha-1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Omnibot\ET;..\..\Omnibot\Common;..\lua-5.2.1\include;..\sha-1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;GAMEDLL;USE_MDXFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -206,10 +206,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;ws2_32.lib;lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\Release\Lua/qagame_mp_x86.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\lua-5.1.4\libs\win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lua-5.2.1\libs\win32</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\game.def</ModuleDefinitionFile>
       <GenerateDebugInformation>
       </GenerateDebugInformation>
@@ -781,19 +781,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\lua-5.1.4\include\lauxlib.h">
+    <ClInclude Include="..\lua-5.2.1\include\lauxlib.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lua.h">
+    <ClInclude Include="..\lua-5.2.1\include\lua.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lua.hpp">
+    <ClInclude Include="..\lua-5.2.1\include\lua.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\luaconf.h">
+    <ClInclude Include="..\lua-5.2.1\include\luaconf.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lualib.h">
+    <ClInclude Include="..\lua-5.2.1\include\lualib.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="g_http_client.h" />

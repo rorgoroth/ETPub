@@ -4,6 +4,8 @@
 #include "q_shared.h"
 #include "g_local.h"
 
+#define LUA_COMPAT_ALL // Lua 5.2 compatibility with previous versions
+
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"

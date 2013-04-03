@@ -98,15 +98,15 @@ local_env.Append( CXXFLAGS = ['-fpermissive'] )
 # optionally build with Lua API support
 if( WITH_LUA_SUPPORT == '1' ):
 	local_env.Append( CPPDEFINES = ['LUA_SUPPORT'] )
-	local_env.Append( CPPPATH = ['../../../lua-5.1.4/include'] )
+	local_env.Append( CPPPATH = ['../../../lua-5.2.1/include'] )
 	
 	if( g_os == 'Linux' ):
 		local_env.Append( LINKFLAGS = ['-Wl,-rpath=./'] )
-		local_env.Append( LIBPATH = ['%s/lua-5.1.4/libs/linux/%s' % ( GetLaunchDir(), cpu )] )
+		local_env.Append( LIBPATH = ['%s/lua-5.2.1/libs/linux/%s' % ( GetLaunchDir(), cpu )] )
 	else:
-		local_env.Append( LIBPATH = ['%s/lua-5.1.4/libs/win32' % GetLaunchDir()] )
+		local_env.Append( LIBPATH = ['%s/lua-5.2.1/libs/win32' % GetLaunchDir()] )
 		
-	local_env.Append( LIBS = ['lua5.1'] )
+	local_env.Append( LIBS = ['lua52'] )
 	qagame_string += lua_string
 
 # Jaybird - these lines are used to statically link c++'s dependencies

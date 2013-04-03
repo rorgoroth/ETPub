@@ -13,12 +13,6 @@
       <UniqueIdentifier>{76d94791-bf94-480a-ab38-0068f18524ba}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-    <Filter Include="Lua 5.1.4">
-      <UniqueIdentifier>{c91e5e0c-f089-4fac-990f-e4350611399d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Lua 5.1.4\Header Files">
-      <UniqueIdentifier>{8b1b3e5a-df61-4a7f-a05a-45bf98dce090}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SHA-1">
       <UniqueIdentifier>{ba9e24a8-801c-4a4b-90bd-14e806c7512c}</UniqueIdentifier>
     </Filter>
@@ -27,6 +21,12 @@
     </Filter>
     <Filter Include="SHA-1\Source Files">
       <UniqueIdentifier>{cd5b820d-cdde-4263-9359-76bae68875e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lua 5.2.1">
+      <UniqueIdentifier>{c91e5e0c-f089-4fac-990f-e4350611399d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lua 5.2.1\Header Files">
+      <UniqueIdentifier>{8b1b3e5a-df61-4a7f-a05a-45bf98dce090}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -296,21 +296,6 @@
     <ClInclude Include="..\botai\syn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lauxlib.h">
-      <Filter>Lua 5.1.4\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lua.h">
-      <Filter>Lua 5.1.4\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lua.hpp">
-      <Filter>Lua 5.1.4\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\luaconf.h">
-      <Filter>Lua 5.1.4\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lua-5.1.4\include\lualib.h">
-      <Filter>Lua 5.1.4\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="g_lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -319,6 +304,21 @@
     </ClInclude>
     <ClInclude Include="g_http_client.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lua-5.2.1\include\lauxlib.h">
+      <Filter>Lua 5.2.1\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lua-5.2.1\include\lua.h">
+      <Filter>Lua 5.2.1\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lua-5.2.1\include\lua.hpp">
+      <Filter>Lua 5.2.1\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lua-5.2.1\include\luaconf.h">
+      <Filter>Lua 5.2.1\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lua-5.2.1\include\lualib.h">
+      <Filter>Lua 5.2.1\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
