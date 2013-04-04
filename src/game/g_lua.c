@@ -741,6 +741,7 @@ static const gentity_field_t gclient_fields[] = {
 	// New to ETPub:
 	_et_gclient_addfield(		sess.guid,													FIELD_STRING,		FIELD_FLAG_NOPTR + FIELD_FLAG_READONLY	),
 	_et_gclient_addfield(		sess.ip,													FIELD_STRING,		FIELD_FLAG_NOPTR + FIELD_FLAG_READONLY	),
+	_et_gclient_addfield(		sess.mac,													FIELD_STRING,		FIELD_FLAG_NOPTR + FIELD_FLAG_READONLY	),
 	_et_gclient_addfield(		sess.uci,													FIELD_INT,			FIELD_FLAG_READONLY						),
 	_et_gclient_addfield(		sess.ignoreClients,											FIELD_INT,			0										),
 	_et_gclient_addfield(		sess.skillpoints,											FIELD_FLOAT_ARRAY,	FIELD_FLAG_READONLY						),
@@ -897,6 +898,25 @@ gentity_field_t *_et_gentity_getfield(gentity_t *ent, char *fieldname)
 	}
 
 	return 0;
+}
+
+// gentity number = _et_gentity_ptrtoentnum( pointer-value )
+// input:  pointer to a gentity (gentity*)
+// output: the entity number.
+//         if (input==0) return = -1
+//         if (input address is out of g_entities[] memory range) return -1;
+int _et_gentity_ptrtoentnum(unsigned long addr)
+{
+	// no NULL address,
+	// address must also be in the range of the g_entities array memory space,
+	// address must also be pointing to the start of an entity (invalid if it points just somewhere halfway into the entity)
+	if (!addr ||
+		(gentity_t *)addr < &g_entities[0] ||
+		(gentity_t *)addr > &g_entities[MAX_GENTITIES - 1] ||
+		(addr - (unsigned long)&g_entities[0]) % sizeof(gentity_t) != 0) {
+		return -1;
+	}
+	return ((gentity_t *)addr - g_entities);
 }
 
 void _et_gentity_getvec3(lua_State *L, vec3_t vec3)
@@ -1065,11 +1085,9 @@ int _et_G_GetSpawnVar(lua_State *L)
 		case F_INT:
 			lua_pushinteger(L, *(int *) ((byte *)ent + ofs));
 			return 1;
-			break;
 		case F_FLOAT:
 			lua_pushnumber(L, *(float *) ((byte *)ent + ofs));
 			return 1;
-			break;
 		case F_LSTRING:
 		case F_GSTRING:
 			if ( fields[index].flags & FIELD_FLAG_NOPTR ) {
@@ -1078,20 +1096,25 @@ int _et_G_GetSpawnVar(lua_State *L)
 				lua_pushstring(L, *(char **) ((byte *)ent + ofs));
 			}
 			return 1;
-			break;
 		case F_VECTOR:
 		case F_ANGLEHACK:
 			_et_gentity_getvec3(L, *(vec3_t *)((byte *)ent + ofs));
 			return 1;
-			break;
 		case F_ENTITY:
+			// core: return the entity-number of the entity that the pointer is pointing at.
+			entnum = _et_gentity_ptrtoentnum(*(int *)((byte *)ent + ofs));
+			if (entnum < 0) {
+				lua_pushnil(L);
+			} else {
+				lua_pushinteger(L, entnum);
+			}
+			return 1;
 		case F_ITEM:
 		case F_CLIENT:
 		case F_IGNORE:
 		default:
 			lua_pushnil(L);
 			return 1;
-			break;
 	}
 	return 0;
 }
@@ -1134,11 +1157,9 @@ static int _et_G_SetSpawnVar(lua_State *L)
 		case F_INT:
 			*(int *) ((byte *)ent + ofs) = luaL_checkint(L, 3);
 			return 1;
-			break;
 		case F_FLOAT:
 			*(float *) ((byte *)ent + ofs) = (float)luaL_checknumber(L, 3);
 			return 1;
-			break;
 		case F_LSTRING:
 		case F_GSTRING:
 			buffer = luaL_checkstring(L, 3);
@@ -1150,23 +1171,20 @@ static int _et_G_SetSpawnVar(lua_State *L)
 				Q_strncpyz(*(char **)((byte *)ent + ofs), buffer, strlen(buffer));
 			}
 			return 1;
-			break;
 		case F_VECTOR:
 		case F_ANGLEHACK:
 			_et_gentity_setvec3(L, (vec3_t *)((byte *)ent + ofs));
 			return 1;
-			break;
 		case F_ENTITY:
-			*(gentity_t **)((byte *)ent + ofs) = g_entities + luaL_checkint(L, 3);
-			return 1;
-			break;
+			// core: pointer-fields are read-only..
+			//*(gentity_t **)((byte *)ent + ofs) = g_entities + luaL_checkint(L, 3);
+			return 0;
 		case F_ITEM:
 		case F_CLIENT:
 		case F_IGNORE:
 		default:
 			lua_pushnil(L);
 			return 1;
-			break;
 	}
 
 	return 0;
@@ -1198,8 +1216,9 @@ int _et_gentity_get(lua_State *L)
 	const char *fieldname = luaL_checkstring(L, 2);
 	gentity_field_t *field = _et_gentity_getfield(ent, (char *)fieldname);
 	unsigned long addr;
+	int entnum = -1;
 
-	// break on invalid gentity field
+	// break at invalid gentity field
 	if ( !field ) {
 		luaL_error(L, "tried to get invalid gentity field \"%s\"", fieldname);
 		return 0;
@@ -1234,7 +1253,13 @@ int _et_gentity_get(lua_State *L)
 			lua_pushnumber(L, *(float *)addr);
 			return 1;
 		case FIELD_ENTITY:
-			lua_pushinteger(L, (*(gentity_t **)addr) - g_entities);
+			// core: return the entity-number of the entity that the pointer is pointing at.
+			entnum = _et_gentity_ptrtoentnum(*(int *)addr);
+			if (entnum < 0) {
+				lua_pushnil(L);
+			} else {
+				lua_pushinteger(L, entnum);
+			}
 			return 1;
 		case FIELD_VEC3:
 			_et_gentity_getvec3(L, *(vec3_t *)addr);
@@ -1265,14 +1290,14 @@ static int _et_gentity_set(lua_State *L)
 	unsigned long addr;
 	const char *buffer;
 	
-	// break on invalid gentity field
+	// break at invalid gentity field
 	if ( !field ) {
 		luaL_error(L, "tried to set invalid gentity field \"%s\"", fieldname);
 		return 0;
 	}
 
-	// break on read-only gentity field
-	if ( field->flags & FIELD_FLAG_READONLY ) {
+	// break at read-only or pointer gentity field
+	if ((field->flags & FIELD_FLAG_READONLY) || field->type == FIELD_ENTITY) {
 		luaL_error(L, "tried to set read-only gentity field \"%s\"", fieldname);
 		return 0;
 	}
@@ -1283,10 +1308,9 @@ static int _et_gentity_set(lua_State *L)
 		addr = (unsigned long)ent->client;
 	}
 
-	// for NULL entities, return nil (prevents server crashes!)
+	// break at NULL entities (prevents server crashes!)
 	if ( !addr ) {
-		lua_pushnil(L);
-		return 1;
+		return 0;
 	}
 
 	addr += (unsigned long)field->mapping;
@@ -1308,9 +1332,6 @@ static int _et_gentity_set(lua_State *L)
 		case FIELD_FLOAT:
 			*(float *)addr = (float)luaL_checknumber(L, 3);
 			break;
-		case FIELD_ENTITY:
-			*(gentity_t **)addr = g_entities + luaL_checkint(L, 3);
-			break;
 		case FIELD_VEC3:
 			_et_gentity_setvec3(L, (vec3_t *)addr);
 			break;
@@ -1322,7 +1343,7 @@ static int _et_gentity_set(lua_State *L)
 			break;
 		case FIELD_FLOAT_ARRAY:
 			*(float *)(addr + (sizeof(int) * luaL_checkint(L, 3))) = luaL_checknumber(L, 4);
-			return 1;
+			break;
 	}
 	return 0;
 }
@@ -1472,11 +1493,11 @@ qboolean G_LuaInit()
 			// try to open lua file
 			flen = trap_FS_FOpenFile(crt, &f, FS_READ);
 			if (flen < 0) {
-				G_Lua_Printf("Lua API: can not open file %s\n", crt);
+				G_Lua_Printf("%s API: can not open file %s\n", LUA_VERSION, crt);
 			} else if (flen > LUA_MAX_FSIZE) {
 				// quad: Let's not load arbitrarily big files to memory.
 				// If your lua file exceeds the limit, let me know.
-				G_Lua_Printf("Lua API: ignoring file %s (too big)\n", crt);
+				G_Lua_Printf("%s API: ignoring file %s (too big)\n", LUA_VERSION, crt);
 				trap_FS_FCloseFile(f);
 			} else {
 				code = malloc(flen + 1);
@@ -1489,7 +1510,7 @@ qboolean G_LuaInit()
 					 !strstr(lua_allowedModules.string, signature) ) {
 					// don't load disallowed lua modules into vm
 					free(code);
-					G_Lua_Printf("Lua API: Lua module [%s] [%s] disallowed by ACL\n", crt, signature);
+					G_Lua_Printf("%s API: Lua module [%s] [%s] disallowed by ACL\n", LUA_VERSION, crt, signature);
 				} else {
 					// Init lua_vm_t struct
 					vm = (lua_vm_t*) malloc(sizeof(lua_vm_t));
@@ -1519,7 +1540,7 @@ qboolean G_LuaInit()
 			else
 				crt = NULL;
 			if (num_vm >= LUA_NUM_VM) {
-				G_Lua_Printf("Lua API: too many lua files specified, only the first %d have been loaded\n", LUA_NUM_VM);
+				G_Lua_Printf("%s API: too many lua files specified, only the first %d have been loaded\n", LUA_VERSION, LUA_NUM_VM);
 				break;
 			}
 		}
@@ -1534,16 +1555,16 @@ qboolean G_LuaCall(lua_vm_t* vm, char *func, int nargs, int nresults)
 	int res = lua_pcall(vm->L, nargs, nresults, 0);
 	if (res == LUA_ERRRUN) {
 		// pheno: made output more ETPro compatible
-		G_Lua_Printf("Lua API: %s error running lua script: %s\n", func, lua_tostring(vm->L, -1));
+		G_Lua_Printf("%s API: %s error running lua script: %s\n", LUA_VERSION, func, lua_tostring(vm->L, -1));
 		lua_pop(vm->L, 1);
 		vm->err++;
 		return qfalse;
 	} else if (res == LUA_ERRMEM) {
-		G_Lua_Printf("Lua API: memory allocation error #2 ( %s )\n", vm->file_name);
+		G_Lua_Printf("%s API: memory allocation error #2 ( %s )\n", LUA_VERSION, vm->file_name);
 		vm->err++;
 		return qfalse;
 	} else if (res == LUA_ERRERR) {
-		G_Lua_Printf("Lua API: traceback error ( %s )\n", vm->file_name);
+		G_Lua_Printf("%s API: traceback error ( %s )\n", LUA_VERSION, vm->file_name);
 		vm->err++;
 		return qfalse;
 	}
@@ -1582,7 +1603,7 @@ qboolean G_LuaStartVM( lua_vm_t *vm )
 	// Open a new lua state
 	vm->L = luaL_newstate();
 	if( !vm->L ) {
-		G_Lua_Printf( "Lua API: Lua failed to initialise.\n" );
+		G_Lua_Printf( "%s API: Lua failed to initialise.\n", LUA_VERSION );
 		return qfalse;
 	}
 
@@ -1647,17 +1668,16 @@ qboolean G_LuaStartVM( lua_vm_t *vm )
 	luaL_register( vm->L, "et", etlib );
 
 	// Load the code
-	G_Lua_Printf( "Lua API: Loading %s\n", vm->file_name );
+	G_Lua_Printf( "%s API: Loading %s\n", LUA_VERSION, vm->file_name );
 
 	res = luaL_loadbuffer( vm->L, vm->code, vm->code_size, vm->file_name );
 	if( res == LUA_ERRSYNTAX ) {
-		G_Lua_Printf( "Lua API: syntax error during pre-compilation: %s\n",
-			lua_tostring( vm->L, -1 ) );
+		G_Lua_Printf( "%s API: syntax error during pre-compilation: %s\n", LUA_VERSION, lua_tostring( vm->L, -1 ) );
 		lua_pop( vm->L, 1 );
 		vm->err++;
 		return qfalse;
 	} else if( res == LUA_ERRMEM ) {
-		G_Lua_Printf( "Lua API: memory allocation error #1 ( %s )\n", vm->file_name );
+		G_Lua_Printf( "%s API: memory allocation error #1 ( %s )\n", LUA_VERSION, vm->file_name );
 		vm->err++;
 		return qfalse;
 	}
@@ -1691,7 +1711,7 @@ void G_LuaStopVM(lua_vm_t *vm)
 		if (lVM[vm->id] == vm)
 			lVM[vm->id] = NULL;
 		if (!vm->err) {
-			G_Lua_Printf("Lua API: Lua module [%s] [%s] unloaded.\n", vm->file_name, vm->mod_signature);
+			G_Lua_Printf("%s API: Lua module [%s] [%s] unloaded.\n", LUA_VERSION, vm->file_name, vm->mod_signature);
 		}
 	}
 	free(vm);
@@ -1723,12 +1743,12 @@ void G_LuaStatus(gentity_t *ent)
 			cnt++;
 	
 	if (cnt == 0) {
-		G_refPrintf(ent, "Lua API: no scripts loaded.");
+		G_refPrintf(ent, "%s API: no scripts loaded.", LUA_VERSION);
 		return;
 	} else if (cnt == 1) {
-		G_refPrintf(ent, "Lua API: showing lua information ( 1 module loaded )");
+		G_refPrintf(ent, "%s API: showing lua information ( 1 module loaded )", LUA_VERSION);
 	} else {
-		G_refPrintf(ent, "Lua API: showing lua information ( %d modules loaded )", cnt);
+		G_refPrintf(ent, "%s API: showing lua information ( %d modules loaded )", LUA_VERSION, cnt);
 	}
 	G_refPrintf(ent, "%-2s %-24s %-40s %-24s", "VM", "Modname", "Signature", "Filename");
 	G_refPrintf(ent, "-- ------------------------ ---------------------------------------- ------------------------");

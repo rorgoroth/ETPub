@@ -2147,3 +2147,6 @@
            of multiple text replacement processing
 * pheno:   added IlDuca's fix for damaged antiwarp (thx ira)
 * pheno:   fixed a bug where first blood message was used for last blood broadcast
+* pheno:   Lua API: added RO access to gentity field sess.mac
+* pheno:   Lua API: added core's fix for fields of type FIELD_ENTITY. No more pointer-values are
+           returned anymore.
