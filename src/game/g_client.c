@@ -2858,7 +2858,7 @@ void ClientBegin( int clientNum )
 			char etpubc[10];
 			Q_strncpyz(etpubc, Info_ValueForKey(userinfo, "cg_etpubc"), sizeof(etpubc));
 				if(strcmp(g_clientVersion.string, etpubc)) {
-					G_LogPrintf("Client version mismatch: found: %s, required: %s\n", etpubc, g_clientVersion.string);
+					G_Printf("Client version mismatch: found: %s, required: %s\n", etpubc, g_clientVersion.string);
 					dropReason = va("Client version mismatch:\nFound: %s\nRequired: %s", etpubc, g_clientVersion.string);
 				}
 			}
