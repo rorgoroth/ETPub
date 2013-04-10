@@ -32,3 +32,10 @@ Important Notes For Upgrading etpub 0.9.x to 1.0.x
       sound/hitsounds/team_warn_axis.wav
    
    Note: NEVER replace the default sound files within the client pk3!
+
+4) The Lua API has changed to version 5.2. All features marked as deprecated in Lua 5.1 have
+   been removed in Lua 5.2. You may find incompatibilities while moving your Lua scripts from
+   ETpub 0.9.1 to ETpub 1.0.0. Read the corresponding manuals to adjust your Lua scripts.
+   
+      Lua 5.1 Incompatibilities: http://www.lua.org/manual/5.1/manual.html#7
+      Lua 5.2 Incompatibilities: http://www.lua.org/manual/5.2/manual.html#8
