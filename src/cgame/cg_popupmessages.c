@@ -14,7 +14,7 @@ struct pmStackItem_s {
 	int						time;
 	char					message[128];
 	qhandle_t				shader;
-
+	vec3_t					color;
 	pmListItem_t*			next;
 };
 
@@ -232,7 +232,7 @@ pmListItem_t* CG_FindFreePMItem( void ) {
 	}
 }
 
-void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shader ) {
+void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shader, vec3_t color ) {
 	pmListItem_t* listItem;
 	char* end;
 
@@ -259,6 +259,12 @@ void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shade
 	listItem->inuse = qtrue;
 	listItem->type = type;
 	Q_strncpyz( listItem->message, message, sizeof( cg_pmStack[0].message ) );
+
+	// pheno: colored obituaries
+	listItem->color[0] = listItem->color[1] = listItem->color[2] = 1.f;
+	if (color != NULL) {
+		VectorCopy(color, listItem->color);
+	}
 
 	// rain - moved this: print and THEN chop off the newline, as the
 	// console deals with newlines perfectly.  We do chop off the newline
@@ -345,7 +351,7 @@ void CG_DrawPMItems( void ) {
 	vec4_t colour = { 0.f, 0.f, 0.f, 1.f };
 	vec4_t colourText = { 1.f, 1.f, 1.f, 1.f };
 	float t;
-	int i, size;
+	int i, size, j;
 	pmListItem_t* listItem = cg_pmOldList;
 	int x = cg.hud.cpmtext[0];
 	int y = cg.hud.cpmtext[1];
@@ -379,9 +385,17 @@ void CG_DrawPMItems( void ) {
 		colourText[3] = colour[3] = 1 - ((cg.time - t) / (float)PM_FADETIME);
 	}
 
+	// colorize
+	for (j = 0; j < 3; j++) {
+		colourText[j] = cg_pmWaitingList->color[j];
+	}
+
 	scaleVal = cg.hud.cpmtext[2]/100.f;
 	trap_R_SetColor( colourText );
 	CG_DrawPic( x, y, size, size, cg_pmWaitingList->shader );
+	
+	colourText[0] = colourText[1] = colourText[2] = 1.f; // decolorize
+	
 	trap_R_SetColor( NULL );
 	CG_Text_Paint_Ext( x + size + 2, y + 12, scaleVal, scaleVal,
 		colourText, cg_pmWaitingList->message, 
@@ -397,8 +411,16 @@ void CG_DrawPMItems( void ) {
 			colourText[3] = colour[3] = 1.f;
 		}
 
+		// colorize
+		for (j = 0; j < 3; j++) {
+			colourText[j] = listItem->color[j];
+		}
+
 		trap_R_SetColor( colourText );
 		CG_DrawPic( x, y, size, size, listItem->shader );
+		
+		colourText[0] = colourText[1] = colourText[2] = 1.f; // decolorize
+		
 		trap_R_SetColor( NULL );
 		CG_Text_Paint_Ext( x + size + 2, y + 12, scaleVal, scaleVal, 
 			colourText, listItem->message, 

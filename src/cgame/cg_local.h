@@ -3790,7 +3790,7 @@ void CG_DrawPlayerHead( rectDef_t *rect, bg_character_t* character, bg_character
 void CG_InitPM( void );
 void CG_InitPMGraphics( void );
 void CG_UpdatePMLists( void );
-void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shader );
+void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shader, vec3_t color );
 void CG_AddPMItemBig( popupMessageBigType_t type, const char* message, qhandle_t shader );
 void CG_DrawPMItems( void );
 void CG_DrawPMItemsBig( void );

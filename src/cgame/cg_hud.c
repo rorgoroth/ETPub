@@ -2544,7 +2544,7 @@ static void CG_HudEditor_CpmTextDraw() {
 
 		// forty - ratelimit
 		if(trap_Milliseconds() - cg.hudEditor.popupTime > 1000) {
-			CG_AddPMItem( PM_MESSAGE, "Sample", cgs.media.voiceChatShader );
+			CG_AddPMItem( PM_MESSAGE, "Sample", cgs.media.voiceChatShader, NULL );
 			cg.hudEditor.popupTime = trap_Milliseconds();
 		}
 

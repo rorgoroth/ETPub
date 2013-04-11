@@ -2487,7 +2487,7 @@ static void CG_ServerCommand( void ) {
 	}
 
 	if ( !Q_stricmp( cmd, "cpm" ) ) {
-		CG_AddPMItem( PM_MESSAGE, CG_LocalizeServerCommand( CG_Argv(1) ), cgs.media.voiceChatShader );
+		CG_AddPMItem( PM_MESSAGE, CG_LocalizeServerCommand( CG_Argv(1) ), cgs.media.voiceChatShader, NULL );
 		return;
 	}
 

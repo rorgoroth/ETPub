@@ -229,7 +229,7 @@ static void CG_Obituary( entityState_t *ent ) {
 			CG_AddToTeamChat( finalMsg, -1 );
 			CG_Printf("%s\n", finalMsg);
 		} else {
-			CG_AddPMItem( PM_DEATH, finalMsg, deathShader );
+			CG_AddPMItem( PM_DEATH, finalMsg, deathShader, colorYellow );
 		}
 		return;
 	}
@@ -468,26 +468,18 @@ static void CG_Obituary( entityState_t *ent ) {
 			break;
 		}
 
-		if( ci->team == ca->team ) {
-			tk = qtrue;
-			if ( cg_obituary.integer < 2 ) {
-				message = "^7was killed by ^1TEAMMATE^7";
-				message2 = "";
-			}
-		}
-
 		if (message) {
 			message = CG_TranslateString( message );
 			if ( message2 ) {
 				message2 = CG_TranslateString( message2 );
 				finalMsg = va("%s%s %s %s%s", 
-					((tk && cg_obituary.integer > 1)?"^1TEAMKILL: ^7":""),
+					((ci->team == ca->team) ? "^1TEAM KILL^7: " : ""),
 					targetName, message, attackerName, message2);
 				if ( (cg_obituary.integer % 2) == 1 ) {
 					CG_AddToTeamChat(finalMsg, -1);
 					CG_Printf("%s\n", finalMsg);
 				} else {
-					CG_AddPMItem( PM_DEATH, finalMsg, deathShader );
+					CG_AddPMItem( PM_DEATH, finalMsg, deathShader, colorRed );
 				}
 //				CG_Printf( "%s %s %s%s\n", targetName, message, attackerName, message2 );
 			}
@@ -503,7 +495,7 @@ static void CG_Obituary( entityState_t *ent ) {
 				CG_AddToTeamChat(finalMsg, -1);
 				CG_Printf("%s\n", finalMsg);
 			} else {
-				CG_AddPMItem( PM_DEATH, finalMsg, deathShader );
+				CG_AddPMItem( PM_DEATH, finalMsg, deathShader, colorYellow );
 			}
 			break;
 	}
@@ -528,7 +520,7 @@ static void CG_ItemPickup( int itemNum ) {
 	
 	itemid = bg_itemlist[itemNum].giTag;
 
-	CG_AddPMItem( PM_MESSAGE, va( "Picked up %s", CG_PickupItemText( itemNum ) ), cgs.media.pmImages[PM_MESSAGE] );
+	CG_AddPMItem( PM_MESSAGE, va( "Picked up %s", CG_PickupItemText( itemNum ) ), cgs.media.pmImages[PM_MESSAGE], NULL );
 
 //	cg.itemPickup			= itemNum;
 //	cg.itemPickupTime		= cg.time;
@@ -2799,7 +2791,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			const char* str = CG_GetPMItemText( cent );
 			qhandle_t shader = CG_GetPMItemIcon( cent );
 			if( str ) {
-				CG_AddPMItem( cent->currentState.effect1Time, str, shader );
+				CG_AddPMItem( cent->currentState.effect1Time, str, shader, NULL );
 			}
 			CG_PlayPMItemSound( cent );
 		}
