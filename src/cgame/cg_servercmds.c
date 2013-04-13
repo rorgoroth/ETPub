@@ -911,119 +911,146 @@ void CG_ChargeTimesChanged( void ) {
 /*
 ================
 CG_ConfigStringModified
-
 ================
 */
-static void CG_ConfigStringModified( void ) {
+static void CG_ConfigStringModified(void)
+{
 	const char	*str;
-	int		num;
-
-	num = atoi( CG_Argv( 1 ) );
+	int			num = atoi(CG_Argv(1));
 
 	// get the gamestate from the client system, which will have the
 	// new configstring already integrated
-	trap_GetGameState( &cgs.gameState );
+	trap_GetGameState(&cgs.gameState);
 
 	// look up the individual string that was modified
-	str = CG_ConfigString( num );
+	str = CG_ConfigString(num);
 
 	// do something with it if necessary
-	if ( num == CS_MUSIC ) {
-		CG_StartMusic();
-	} else if ( num == CS_MUSIC_QUEUE ) {
-		CG_QueueMusic();
-	} else if ( num == CS_SERVERINFO ) {
+	switch (num) {
+	case CS_SERVERINFO:
 		CG_ParseServerinfo();
-	} else if ( num == CS_WARMUP ) {
+		break;
+	case CS_MUSIC:
+		CG_StartMusic();
+		break;
+	case CS_WARMUP:
 		CG_ParseWarmup();
-	} else if ( num == CS_WOLFINFO ) {		// NERVE - SMF
-		CG_ParseWolfinfo();
-	} else if ( num == CS_FIRSTBLOOD ) {
-		cg.teamFirstBlood = atoi( str );
-	} else if ( num == CS_ROUNDSCORES1 ) {
-		cg.teamWonRounds[1] = atoi( str );
-	} else if ( num == CS_ROUNDSCORES2 ) {
-		cg.teamWonRounds[0] = atoi( str );
-	} else if ( num >= CS_MULTI_SPAWNTARGETS && num < CS_MULTI_SPAWNTARGETS + MAX_MULTI_SPAWNTARGETS ) {
-		CG_ParseSpawns();
-	} else if ( num == CS_VERSIONINFO ) {
-		CG_ParseServerVersionInfo(str);			// OSP - set versioning info for older demo playback
-	} else if ( num == CS_REINFSEEDS ) {
-		CG_ParseReinforcementTimes(str);		// OSP - set reinforcement times for each team
-	} else if ( num == CS_LEVEL_START_TIME ) {
-		cgs.levelStartTime = atoi( str );
-	} else if ( num == CS_INTERMISSION_START_TIME ) {
-		cgs.intermissionStartTime = atoi( str );
-	} else if ( num == CS_VOTE_TIME ) {
-		cgs.voteTime = atoi( str );
+		break;
+	case CS_VOTE_TIME:
+		cgs.voteTime = atoi(str);
 		cgs.voteModified = qtrue;
-	} else if ( num == CS_VOTE_YES ) {
+		break;
+	case CS_VOTE_STRING:
+		Q_strncpyz(cgs.voteString, str, sizeof(cgs.voteString));
+		break;
+	case CS_VOTE_YES:
 		cgs.voteYes = atoi( str );
 		cgs.voteModified = qtrue;
-	} else if ( num == CS_VOTE_NO ) {
+		break;
+	case CS_VOTE_NO:
 		cgs.voteNo = atoi( str );
 		cgs.voteModified = qtrue;
-	} else if ( num == CS_VOTE_STRING ) {
-		Q_strncpyz( cgs.voteString, str, sizeof( cgs.voteString ) );
-	} else if ( num == CS_INTERMISSION ) {
-		cg.intermissionStarted = atoi( str );
-	} else if ( num == CS_SCREENFADE ) {
+		break;
+	case CS_LEVEL_START_TIME:
+		cgs.levelStartTime = atoi(str);
+		break;
+	case CS_INTERMISSION:
+		cg.intermissionStarted = atoi(str) ? qtrue : qfalse;
+		break;
+	case CS_SCREENFADE:
 		CG_ParseScreenFade();
-	} else if ( num == CS_FOGVARS ) {
+		break;
+	case CS_FOGVARS:
 		CG_ParseFog();
-	} else if ( num == CS_GLOBALFOGVARS ) {
-		CG_ParseGlobalFog();
-	} else if ( num >= CS_MODELS && num < CS_MODELS+MAX_MODELS ) {
-		cgs.gameModels[ num-CS_MODELS ] = trap_R_RegisterModel( str );
-	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
-		if ( str[0] != '*' ) {	// player specific sounds don't register here
-
-			// Ridah, register sound scripts seperately
-			if (!strstr(str, ".wav")) {
-				CG_SoundScriptPrecache( str );
-			} else {
-				cgs.gameSounds[ num-CS_SOUNDS] = trap_S_RegisterSound( str, qfalse );	//FIXME: add a compress flag?
-			}
-
-		}
-	} else if( num >= CS_SHADERS && num < CS_SHADERS + MAX_CS_SHADERS ) {
-		cgs.gameShaders[ num - CS_SHADERS ] = str[0] == '*' ? trap_R_RegisterShader( str + 1 ) : trap_R_RegisterShaderNoMip( str );
-		Q_strncpyz( cgs.gameShaderNames[num - CS_SHADERS], str[0] == '*' ? str + 1 : str, MAX_QPATH );
-	} else if( num >= CS_SKINS && num < CS_SKINS+MAX_CS_SKINS ) {
-		cgs.gameModelSkins[ num-CS_SKINS ] = trap_R_RegisterSkin( str );
-	} else if( num >= CS_CHARACTERS && num < CS_CHARACTERS+MAX_CHARACTERS ) {
-		if( !BG_FindCharacter( str ) ) {
-			cgs.gameCharacters[ num - CS_CHARACTERS ] = BG_FindFreeCharacter( str );
-
-			Q_strncpyz( cgs.gameCharacters[ num - CS_CHARACTERS ]->characterFile, str, sizeof(cgs.gameCharacters[ num - CS_CHARACTERS ]->characterFile) );
-
-			if( !CG_RegisterCharacter( str, cgs.gameCharacters[ num - CS_CHARACTERS ] ) ) {
-				CG_Error( "ERROR: CG_ConfigStringModified: failed to load character file '%s'\n", str );
-			}
-		}
-	} else if( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
-		CG_NewClientInfo( num - CS_PLAYERS );
-	} else if( num >= CS_DLIGHTS && num < CS_DLIGHTS+MAX_DLIGHT_CONFIGSTRINGS) {
-		// FIXME - dlight changes ignored!
-	} else if( num == CS_SHADERSTATE ) {
-		CG_ShaderStateChanged();
-	} else if( num == CS_CHARGETIMES ) {
-		CG_ChargeTimesChanged();
-	} else if( num >= CS_FIRETEAMS && num < CS_FIRETEAMS+MAX_FIRETEAMS ) {
-		CG_ParseFireteams();
-	} else if( num == CS_SKYBOXORG) {
+		break;
+	case CS_SKYBOXORG:
 		CG_ParseSkyBox();
-	} else if( num >= CS_TAGCONNECTS && num < CS_TAGCONNECTS + MAX_TAGCONNECTS ) {
-		CG_ParseTagConnect( num );
-	} else if( num == CS_ALLIED_MAPS_XP || num == CS_AXIS_MAPS_XP ) {
-		CG_ParseTeamXPs( num - CS_AXIS_MAPS_XP );
-	} else if( num == CS_FILTERCAMS ) {
-		cg.filtercams = atoi( str ) ? qtrue : qfalse;
-	} else if( num >= CS_OID_DATA && num < CS_OID_DATA + MAX_OID_TRIGGERS ) {
-		CG_ParseOIDInfo( num );
-	}
-	else if(num == CS_ETPUBINFO) {
+		break;
+	case CS_WOLFINFO:
+		// NERVE - SMF
+		CG_ParseWolfinfo();
+		break;
+	case CS_FIRSTBLOOD:
+		cg.teamFirstBlood = atoi(str);
+		break;
+	case CS_ROUNDSCORES1:
+		cg.teamWonRounds[1] = atoi(str);
+		break;
+	case CS_ROUNDSCORES2:
+		cg.teamWonRounds[0] = atoi(str);
+		break;
+	case CS_MUSIC_QUEUE:
+		CG_QueueMusic();
+		break;
+	case CS_VERSIONINFO:
+		// OSP - set versioning info for older demo playback
+		CG_ParseServerVersionInfo(str);
+		break;
+	case CS_REINFSEEDS:
+		// OSP - set reinforcement times for each team
+		CG_ParseReinforcementTimes(str);
+		break;
+	case CS_GLOBALFOGVARS:
+		CG_ParseGlobalFog();
+		break;
+	case CS_AXIS_MAPS_XP:
+	case CS_ALLIED_MAPS_XP:
+		CG_ParseTeamXPs(num - CS_AXIS_MAPS_XP);
+		break;
+	case CS_INTERMISSION_START_TIME:
+		cgs.intermissionStartTime = atoi(str);
+		break;
+	case CS_CHARGETIMES:
+		CG_ChargeTimesChanged();
+		break;
+	case CS_FILTERCAMS:
+		cg.filtercams = atoi(str) ? qtrue : qfalse;
+		break;
+	case CS_ETPUBINFO:
 		CG_ParseEtpubinfo();
+		break;
+	case CS_SHADERSTATE:
+		CG_ShaderStateChanged();
+		break;
+	default:
+		if (num >= CS_MODELS && num < CS_MODELS + MAX_MODELS) {
+			cgs.gameModels[num - CS_MODELS] = trap_R_RegisterModel(str);
+		} else if (num >= CS_SOUNDS && num < CS_SOUNDS + MAX_SOUNDS) {
+			if (str[0] != '*') { // player specific sounds don't register here
+				// Ridah, register sound scripts seperately
+				if (!strstr(str, ".wav")) {
+					CG_SoundScriptPrecache(str);
+				} else {
+					cgs.gameSounds[num-CS_SOUNDS] = trap_S_RegisterSound(str, qfalse); //FIXME: add a compress flag?
+				}
+			}
+		} else if (num >= CS_SHADERS && num < CS_SHADERS + MAX_CS_SHADERS) {
+			cgs.gameShaders[num - CS_SHADERS] = str[0] == '*' ? trap_R_RegisterShader(str + 1) : trap_R_RegisterShaderNoMip(str);
+			Q_strncpyz(cgs.gameShaderNames[num - CS_SHADERS], str[0] == '*' ? str + 1 : str, MAX_QPATH);
+		} else if (num >= CS_SKINS && num < CS_SKINS + MAX_CS_SKINS) {
+			cgs.gameModelSkins[num - CS_SKINS] = trap_R_RegisterSkin(str);
+		} else if (num >= CS_CHARACTERS && num < CS_CHARACTERS + MAX_CHARACTERS) {
+			if (!BG_FindCharacter(str)) {
+				cgs.gameCharacters[num - CS_CHARACTERS] = BG_FindFreeCharacter(str);
+				Q_strncpyz(cgs.gameCharacters[num - CS_CHARACTERS]->characterFile, str, sizeof(cgs.gameCharacters[num - CS_CHARACTERS]->characterFile));
+				if (!CG_RegisterCharacter(str, cgs.gameCharacters[num - CS_CHARACTERS])) {
+					CG_Error("ERROR: CG_ConfigStringModified: failed to load character file '%s'\n", str);
+				}
+			}
+		} else if (num >= CS_PLAYERS && num < CS_PLAYERS + MAX_CLIENTS) {
+			CG_NewClientInfo(num - CS_PLAYERS);
+		} else if (num >= CS_MULTI_SPAWNTARGETS && num < CS_MULTI_SPAWNTARGETS + MAX_MULTI_SPAWNTARGETS) {
+			CG_ParseSpawns();
+		} else if (num >= CS_OID_DATA && num < CS_OID_DATA + MAX_OID_TRIGGERS) {
+			CG_ParseOIDInfo(num);
+		//} else if (num >= CS_DLIGHTS && num < CS_DLIGHTS + MAX_DLIGHT_CONFIGSTRINGS) {
+			// FIXME - dlight changes ignored!
+		} else if (num >= CS_TAGCONNECTS && num < CS_TAGCONNECTS + MAX_TAGCONNECTS) {
+			CG_ParseTagConnect(num);
+		} else if (num >= CS_FIRETEAMS && num < CS_FIRETEAMS + MAX_FIRETEAMS) {
+			CG_ParseFireteams();
+		}
+		break;
 	}
 }
 
