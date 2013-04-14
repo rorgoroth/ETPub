@@ -2674,14 +2674,26 @@ qboolean G_RadiusDamage( vec3_t origin, gentity_t *inflictor, gentity_t *attacke
 	for( e = 0 ; e < numListedEntities ; e++ ) {
 		ent = &g_entities[entityList[ e ]];
 
+		if( ent == ignore ) {
+			continue;
+		}
+		if( !ent->takedamage && ( !ent->dmgparent || !ent->dmgparent->takedamage )) {
+            if ( !(g_dyno.integer & DYNO_CHAIN) || !(mod == MOD_DYNAMITE && ent->s.weapon == WP_DYNAMITE) ) {
+                continue;
+            }
+		}
+
+		G_AdjustedDamageVec( ent, origin, v );
+
+		dist = VectorLength( v );
+		if ( dist >= radius ) {
+			continue;
+		}
+
 		// forty - dyno chaining
 		// only if within blast radius and both on the same objective 
 		// or both or no objectives.
-		if (
-			(g_dyno.integer & DYNO_CHAIN) &&
-			mod == MOD_DYNAMITE && 
-			ent->s.weapon == WP_DYNAMITE 
-		) {
+		if ( mod == MOD_DYNAMITE && ent->s.weapon == WP_DYNAMITE ) {
 			#ifdef DEBUG
 				G_Printf("dyno chaining:inflictor: %x, ent: %x\n", inflictor->onobjective, ent->onobjective);
 			#endif
@@ -2691,20 +2703,6 @@ qboolean G_RadiusDamage( vec3_t origin, gentity_t *inflictor, gentity_t *attacke
 				//set the nextthink just past us by a 1/4 of a second or so.
 				ent->nextthink = level.time + 250;
 			} 
-		}
-
-		if( ent == ignore ) {
-			continue;
-		}
-		if( !ent->takedamage && ( !ent->dmgparent || !ent->dmgparent->takedamage )) {
-			continue;
-		}
-
-		G_AdjustedDamageVec( ent, origin, v );
-
-		dist = VectorLength( v );
-		if ( dist >= radius ) {
-			continue;
 		}
 
 		points = damage * ( 1.0 - dist / radius );
